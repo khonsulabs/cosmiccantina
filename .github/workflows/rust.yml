@@ -13,7 +13,7 @@ jobs:
           sudo apt-get -yqq install libpq-dev
           sudo npm install -g sass
       - name: Install doctl
-        #if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master'
         run: |
           wget https://github.com/digitalocean/doctl/releases/download/v1.35.0/doctl-1.35.0-linux-amd64.tar.gz
           tar -xzf doctl-1.35.0-linux-amd64.tar.gz
@@ -35,13 +35,13 @@ jobs:
         run: cargo test --release --verbose
       - name: Configure production
         run: echo "$DOTENVFILE" > .env
-        #if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master'
         env:
           DOTENVFILE: ${{ secrets.DOTENVFILE }}
       - name: Publish to Registry
         id: publish
-        #if: github.ref == 'refs/heads/master'
-        uses: elgohr/Publish-Docker-Github-Action@2.9
+        if: github.ref == 'refs/heads/master'
+        uses: elgohr/Publish-Docker-Github-Action@2.14
         with:
           name: khonsulabs/cosmiccantina/cosmiccantina-webserver
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -49,7 +49,7 @@ jobs:
           registry: docker.pkg.github.com
           snapshot: true
       - name: "Deploy"
-        #if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master'
         run: |
           mkdir ~/.kube
           echo "$KUBECONFIG_FILE" > ~/.kube/config
