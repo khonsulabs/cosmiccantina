@@ -1112,6 +1112,7 @@ dependencies = [
 [[package]]
 name = "kludgine"
 version = "0.1.0"
+source = "git+https://github.com/khonsulabs/kludgine.git#7f3224c484583c19fdf2058ca9dc54ccae729a49"
 dependencies = [
  "anyhow",
  "async-std",
@@ -1137,6 +1138,7 @@ dependencies = [
 [[package]]
 name = "kludgine-macros"
 version = "0.1.0"
+source = "git+https://github.com/khonsulabs/kludgine.git#7f3224c484583c19fdf2058ca9dc54ccae729a49"
 dependencies = [
  "quote 1.0.4",
  "syn 1.0.18",
