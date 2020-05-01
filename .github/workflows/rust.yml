@@ -28,8 +28,8 @@ jobs:
           aws s3 cp --region us-west-1 s3://khonsulabs-gac/cosmiccantina/cache-target-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}.tar.bz2 . || true
           tar -xjf cache-target-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}.tar.bz2 || true
       - name: Build
+        # sass sass/index.scss public/stylesheet.css
         run: |
-          # sass sass/index.scss public/stylesheet.css
           cargo build --package server --release --verbose
       - name: Run tests
         run: cargo test --release --verbose
