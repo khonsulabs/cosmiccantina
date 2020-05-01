@@ -1,0 +1,46 @@
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: cosmiccantina-deployment
+spec:
+  selector:
+    matchLabels:
+      app: cosmiccantina
+  replicas: 2 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: cosmiccantina
+    spec:
+      containers:
+        - name: cosmiccantina
+          image: docker.pkg.github.com/khonsulabs/cosmiccantina/webserver:latest
+          ports:
+            - containerPort: 7878
+      imagePullSecrets:
+        - name: regcred
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: cosmiccantina-lb
+  annotations:
+    service.beta.kubernetes.io/do-loadbalancer-protocol: "http"
+    service.beta.kubernetes.io/do-loadbalancer-algorithm: "round_robin"
+    service.beta.kubernetes.io/do-loadbalancer-tls-ports: "443"
+    service.beta.kubernetes.io/do-loadbalancer-certificate-id: "e4ba62db-c63c-4014-811f-6b8b99bb9e82"
+    service.beta.kubernetes.io/do-loadbalancer-redirect-http-to-https: "true"
+spec:
+  type: LoadBalancer
+  selector:
+    app: cosmiccantina
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 7878
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 7878
