@@ -5,5 +5,5 @@ async fn main() {
     // Match any request and return hello world!
     let routes = warp::any().map(|| "Hello, World!");
 
-    warp::serve(routes).run(([127, 0, 0, 1], 7878)).await;
+    warp::serve(routes).run(([0, 0, 0, 0], 7878)).await;
 }
