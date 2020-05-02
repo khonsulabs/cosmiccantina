@@ -8,3 +8,9 @@ edition = "2018"
 
 [dependencies]
 kludgine = {git = "https://github.com/khonsulabs/kludgine.git"}
+yarws = "0.3"
+tokio = {version = "0.2", features=["macros"]}
+shared = {path = "../shared"}
+futures = "0.3"
+bincode = "1.2"
+serde = "1"

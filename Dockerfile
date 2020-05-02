@@ -6,7 +6,7 @@ RUN apt-get update \
 
 COPY target/release/server .env server/public/ ./
 
-EXPOSE 7878
+EXPOSE 7878/tcp
 
 ENV RUST_BACKTRACE=1
 
