@@ -33,7 +33,10 @@ async fn websocket_main(websocket: WebSocket) {
                 }
                 Err(err) => println!("Bincode error: {}", err),
             },
-            Err(err) => println!("Error on websocket: {}", err),
+            Err(err) => {
+                println!("Error on websocket: {}", err);
+                return;
+            }
         }
     }
 }
