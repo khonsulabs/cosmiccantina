@@ -5,8 +5,7 @@ use lazy_static::lazy_static;
 use migrations::{pg, sqlx};
 use serde_derive::{Deserialize, Serialize};
 use shared::{Installation, ServerRequest, ServerResponse, UserProfile};
-use sqlx::postgres::{PgListener, PgRow};
-use sqlx::{FromRow, PgPool, Row};
+use sqlx::postgres::PgListener;
 use std::{
     collections::{HashMap, HashSet},
     sync::Arc,
@@ -52,7 +51,7 @@ impl ConnectedClients {
         senders.insert(installation_id, sender);
     }
 
-    async fn associate_acccount(&self, installation_id: Uuid, account_id: i64) {
+    async fn associate_account(&self, installation_id: Uuid, account_id: i64) {
         let mut installations_by_account = self.installations_by_account.write().await;
         let mut account_by_installation = self.account_by_installation.write().await;
         account_by_installation.insert(installation_id, account_id);
@@ -170,40 +169,54 @@ impl ConnectedClient {
     ) -> Result<(), anyhow::Error> {
         match request {
             ServerRequest::Authenticate { installation_id } => {
-                let installation_id = match installation_id {
-                    Some(installation_id) => todo!(
-                    "Lookup installation ID and figure out what state the connection should be in"
-                ),
+                self.installation_id = Some(match installation_id {
+                    Some(installation_id) => installation_id,
                     None => {
                         let installation_id = Uuid::new_v4();
-                        let pool = pg();
-                        let installation = sqlx::query_as!(
-                            Installation,
-                            "SELECT * FROM installation_lookup($1)",
-                            installation_id
-                        )
-                        .fetch_one(&pool)
-                        .await?;
                         responder
                             .send(ServerResponse::AdoptInstallationId {
-                                installation_id: installation.id,
+                                installation_id: installation_id,
                             })
                             .unwrap_or_default();
-                        installation.id
+                        installation_id
                     }
-                };
+                });
 
-                self.installation_id = Some(installation_id);
+                let pool = pg();
+                let installation = sqlx::query_as!(
+                    Installation,
+                    "SELECT * FROM installation_lookup($1)",
+                    installation_id
+                )
+                .fetch_one(&pool)
+                .await?;
+
                 CONNECTED_CLIENTS
-                    .connect(installation_id, responder.clone())
+                    .connect(installation.id, responder.clone())
                     .await;
 
-                responder
-                    .send(ServerResponse::AuthenticateAtUrl {
-                        url: itchio_authorization_url(installation_id),
-                    })
-                    .unwrap_or_default();
+                if let Some(account_id) = installation.account_id {
+                    let profile = sqlx::query_as!(
+                        UserProfile,
+                        "SELECT id, username FROM installation_profile($1)",
+                        installation.id,
+                    )
+                    .fetch_one(&pool)
+                    .await?;
 
+                    CONNECTED_CLIENTS
+                        .associate_account(installation.id, account_id)
+                        .await;
+                    responder
+                        .send(ServerResponse::Authenticated { profile })
+                        .unwrap_or_default();
+                } else {
+                    responder
+                        .send(ServerResponse::AuthenticateAtUrl {
+                            url: itchio_authorization_url(self.installation_id.unwrap()),
+                        })
+                        .unwrap_or_default();
+                }
                 Ok(())
             }
         }
@@ -336,6 +349,10 @@ async fn pg_notify_loop() -> Result<(), anyhow::Error> {
             )
             .fetch_one(&pool)
             .await?;
+
+            CONNECTED_CLIENTS
+                .associate_account(installation_id, profile.id)
+                .await;
 
             CONNECTED_CLIENTS
                 .send_to_installation_id(installation_id, ServerResponse::Authenticated { profile })
