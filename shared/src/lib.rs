@@ -1,4 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum ServerRequest {
@@ -17,4 +18,10 @@ pub enum ServerResponse {
 pub struct UserProfile {
     pub id: u64,
     pub username: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Installation {
+    pub id: Uuid,
+    pub account_id: Option<i64>,
 }
