@@ -73,11 +73,6 @@ impl CosmicCantina {
             ui: Self::create_interface().await.unwrap(),
         }
     }
-
-    async fn initialize(&mut self) -> KludgineResult<()> {
-        Runtime::spawn(network_loop());
-        Ok(())
-    }
     async fn create_interface() -> KludgineResult<UserInterface> {
         let grid = Component::new(
             Grid::new(1, 2)
@@ -147,6 +142,11 @@ impl Window for CosmicCantina {
     async fn render<'a>(&mut self, scene: &mut SceneTarget<'a>) -> KludgineResult<()> {
         self.ui.render(scene).await?;
 
+        Ok(())
+    }
+
+    async fn initialize(&mut self, _scene: &mut Scene) -> KludgineResult<()> {
+        Runtime::spawn(network_loop());
         Ok(())
     }
 
