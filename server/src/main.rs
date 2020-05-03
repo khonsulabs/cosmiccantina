@@ -43,6 +43,12 @@ async fn websocket_main(websocket: WebSocket) {
 
 async fn handle_websocket_request(request: ServerRequest) -> Option<ServerResponse> {
     match request {
-        ServerRequest::Ping(version) => Some(ServerResponse::Pong(version)),
+        ServerRequest::Authenticate { previous_token } => {
+            match previous_token {
+                Some(token) => todo!("Lookup in database"),
+                None => todo!("Generate new token and send it"),
+            }
+            // TODO send auth url
+        }
     }
 }
