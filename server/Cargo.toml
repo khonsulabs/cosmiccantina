@@ -17,3 +17,7 @@ url = "2.1"
 dotenv="0.15"
 tera="1.2"
 lazy_static="1.4"
+crossbeam="0.7"
+uuid={version = "*", features=["v4"]}
+migrations = {path = "../migrations"}
+anyhow="1"

@@ -33,7 +33,6 @@ pub async fn run_all() -> Result<(), MigrationError> {
 mod tests {
     use super::pg;
     use shared::Installation;
-    use sqlx::prelude::*;
     use uuid::Uuid;
     #[tokio::test]
     async fn accounts_test() -> Result<(), sqlx::Error> {

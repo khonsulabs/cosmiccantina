@@ -1,10 +1,11 @@
 use shared::{ServerRequest, ServerResponse, UserProfile};
 use std::time::Duration;
+use uuid::Uuid;
 use yarws::{Client, Msg};
 
 enum LoginState {
     LoggedOut,
-    Connected { token: String },
+    Connected { installation_id: Uuid },
     Authenticated { profile: UserProfile },
 }
 
@@ -23,7 +24,7 @@ async fn main() {
         let (mut tx, mut rx) = socket.into_channel().await;
         tx.send(Msg::Binary(
             bincode::serialize(&ServerRequest::Authenticate {
-                previous_token: None,
+                installation_id: None,
             })
             .unwrap(),
         ))
@@ -33,12 +34,12 @@ async fn main() {
             match msg {
                 Msg::Binary(bytes) => match bincode::deserialize::<ServerResponse>(&bytes) {
                     Ok(response) => match response {
-                        ServerResponse::AuthenticationError { message } => {
+                        ServerResponse::Error { message } => {
                             println!("Authentication error {:?}", message);
                         }
-                        ServerResponse::AdoptToken { token } => {
-                            println!("Received app token {}", token);
-                            login_state = LoginState::Connected { token };
+                        ServerResponse::AdoptInstallationId { installation_id } => {
+                            println!("Received app token {}", installation_id);
+                            login_state = LoginState::Connected { installation_id };
                         }
                         ServerResponse::Authenticated { profile } => {
                             println!("Authenticated as {}", profile.username);

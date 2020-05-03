@@ -3,15 +3,15 @@ use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum ServerRequest {
-    Authenticate { previous_token: Option<String> },
+    Authenticate { installation_id: Option<Uuid> },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum ServerResponse {
-    AdoptToken { token: String },
+    AdoptInstallationId { installation_id: Uuid },
     AuthenticateAtUrl { url: String },
     Authenticated { profile: UserProfile },
-    AuthenticationError { message: Option<String> },
+    Error { message: Option<String> },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

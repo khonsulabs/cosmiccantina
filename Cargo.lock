@@ -415,6 +415,7 @@ dependencies = [
  "serde",
  "shared",
  "tokio",
+ "uuid",
  "webbrowser",
  "yarws",
 ]
@@ -2748,15 +2749,19 @@ dependencies = [
 name = "server"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "bincode",
+ "crossbeam",
  "dotenv",
  "futures",
  "lazy_static",
+ "migrations",
  "serde",
  "shared",
  "tera",
  "tokio",
  "url",
+ "uuid",
  "warp",
 ]
 
