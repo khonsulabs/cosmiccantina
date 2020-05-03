@@ -16,7 +16,7 @@ pub enum ServerResponse {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct UserProfile {
-    pub id: u64,
+    pub id: i64,
     pub username: String,
 }
 

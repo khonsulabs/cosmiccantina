@@ -793,6 +793,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bb1f6b1ce1c140482ea30ddd3335fc0024ac7ee112895426e0a629a6c20adfe3"
 
 [[package]]
+name = "encoding_rs"
+version = "0.8.22"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd8d03faa7fe0c1431609dfad7bbe827af30f82e1e2ae6f7ee4fca6bd764bc28"
+dependencies = [
+ "cfg-if",
+]
+
+[[package]]
 name = "failure"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1311,6 +1320,19 @@ dependencies = [
  "tokio",
  "tower-service",
  "want",
+]
+
+[[package]]
+name = "hyper-tls"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3adcd308402b9553630734e9c36b77a7e48b3821251ca2493e8cd596763aafaa"
+dependencies = [
+ "bytes",
+ "hyper",
+ "native-tls",
+ "tokio",
+ "tokio-tls",
 ]
 
 [[package]]
@@ -2537,6 +2559,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "reqwest"
+version = "0.10.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "02b81e49ddec5109a9dcfc5f2a317ff53377c915e9ae9d4f2fb50914b85614e2"
+dependencies = [
+ "base64 0.11.0",
+ "bytes",
+ "encoding_rs",
+ "futures-core",
+ "futures-util",
+ "http",
+ "http-body",
+ "hyper",
+ "hyper-tls",
+ "js-sys",
+ "lazy_static",
+ "log 0.4.8",
+ "mime 0.3.16",
+ "mime_guess 2.0.3",
+ "native-tls",
+ "percent-encoding",
+ "pin-project-lite",
+ "serde",
+ "serde_json",
+ "serde_urlencoded",
+ "time",
+ "tokio",
+ "tokio-tls",
+ "url",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+ "winreg",
+]
+
+[[package]]
 name = "rgx"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2750,13 +2808,17 @@ name = "server"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-std",
  "bincode",
  "crossbeam",
  "dotenv",
  "futures",
  "lazy_static",
  "migrations",
+ "reqwest",
  "serde",
+ "serde_derive",
+ "serde_json",
  "shared",
  "tera",
  "tokio",
@@ -3603,6 +3665,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f56e97dbea16d5f56549d6c8ea7f36efb6be98507308650c1a5970574b3941b9"
 dependencies = [
  "cfg-if",
+ "serde",
+ "serde_json",
  "wasm-bindgen-macro",
 ]
 
@@ -3619,6 +3683,18 @@ dependencies = [
  "quote 1.0.4",
  "syn 1.0.18",
  "wasm-bindgen-shared",
+]
+
+[[package]]
+name = "wasm-bindgen-futures"
+version = "0.4.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "736dcd8f8455458c82614f12116aabd0209d440c1a28d8824bcaed755ac3e058"
+dependencies = [
+ "cfg-if",
+ "js-sys",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]
@@ -3708,6 +3784,16 @@ checksum = "d94e89a86e6d6d7c7c9b19ebf48a03afaac4af6bc22ae570e9a24124b75358f4"
 dependencies = [
  "dlib",
  "lazy_static",
+]
+
+[[package]]
+name = "web-sys"
+version = "0.3.38"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "07c5819dc39222a788ca169a81aef7d02739019256300534f493b5747d5469c2"
+dependencies = [
+ "js-sys",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -3834,6 +3920,15 @@ dependencies = [
  "wayland-client",
  "winapi 0.3.8",
  "x11-dl",
+]
+
+[[package]]
+name = "winreg"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2986deb581c4fe11b621998a5e53361efe6b48a151178d0cd9eeffa4dc6acc9"
+dependencies = [
+ "winapi 0.3.8",
 ]
 
 [[package]]

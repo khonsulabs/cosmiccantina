@@ -91,6 +91,7 @@ pub fn migration() -> Migration {
                 UPDATE accounts SET itchio_token = itchio_token_in WHERE accounts.id = account_id_in;
                 UPDATE installations SET account_id = account_id_in WHERE id = installation_id;
                 GET DIAGNOSTICS affected_rows = ROW_COUNT;
+                PERFORM pg_notify('installation_login', installation_id::text);
                 RETURN affected_rows;
             END;
             $$ LANGUAGE plpgsql;
@@ -99,6 +100,18 @@ pub fn migration() -> Migration {
         .with_down(
             r#"
         DROP FUNCTION IF EXISTS installation_login
+        "#,
+        )
+        .with_up(
+            r#"
+        CREATE FUNCTION installation_profile(installation_id UUID) RETURNS TABLE (id BIGINT, username TEXT) AS $$ 
+            SELECT accounts.id, accounts.username FROM accounts INNER JOIN installations ON installations.account_id = accounts.id WHERE installations.id = installation_id;
+            $$ LANGUAGE sql;
+        "#,
+        )
+        .with_down(
+            r#"
+        DROP FUNCTION IF EXISTS installation_profile
         "#,
         )
         .debug()
