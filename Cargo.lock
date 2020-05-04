@@ -411,6 +411,7 @@ version = "0.1.0"
 dependencies = [
  "bincode",
  "crossbeam",
+ "dotenv",
  "futures",
  "kludgine",
  "serde",

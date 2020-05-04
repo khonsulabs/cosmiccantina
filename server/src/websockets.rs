@@ -131,6 +131,14 @@ impl ConnectedClient {
                 installation_id,
                 version,
             } => {
+                if &version != shared::PROTOCOL_VERSION {
+                    responder
+                        .send(ServerResponse::Error {
+                            message: Some("An update is available".to_owned()),
+                        })
+                        .unwrap_or_default();
+                    return Ok(());
+                }
                 self.installation_id = Some(match installation_id {
                     Some(installation_id) => installation_id,
                     None => {
@@ -197,7 +205,10 @@ impl Drop for ConnectedClient {
     }
 }
 
+#[cfg(debug_assertions)]
 static REDIRECT_URI: &'static str = "http://localhost:7878/auth/itchio_callback";
+#[cfg(not(debug_assertions))]
+static REDIRECT_URI: &'static str = "https://cantina.khonsu.gg/auth/itchio_callback";
 
 fn itchio_authorization_url(installation_id: Uuid) -> String {
     Url::parse_with_params(

@@ -17,7 +17,7 @@ pub enum LoginState {
     LoggedOut,
     Connected { installation_id: Uuid },
     Authenticated { profile: UserProfile },
-    Error,
+    Error { message: Option<String> },
 }
 
 pub struct Network {
@@ -63,12 +63,18 @@ impl Network {
 
 async fn network_loop() {
     loop {
-        let socket = match Client::new("ws://localhost:7878/ws").connect().await {
+        let socket = match Client::new(&format!(
+            "{}/ws",
+            std::env::var("SERVER_URL").unwrap_or("wss://cantina.khonsu.gg".to_owned())
+        ))
+        .connect()
+        .await
+        {
             Ok(socket) => socket,
             Err(err) => {
                 println!("Error connecting to socket. {}", err);
                 tokio::time::delay_for(Duration::from_millis(100)).await;
-                Network::set_login_state(LoginState::Error).await;
+                Network::set_login_state(LoginState::Error { message: None }).await;
                 continue;
             }
         };
@@ -101,8 +107,7 @@ async fn receive_loop(rx: &mut TokioReceiver<Msg>) -> bool {
                 Msg::Binary(bytes) => match bincode::deserialize::<ServerResponse>(&bytes) {
                     Ok(response) => match response {
                         ServerResponse::Error { message } => {
-                            println!("Authentication error {:?}", message);
-                            Network::set_login_state(LoginState::LoggedOut).await;
+                            Network::set_login_state(LoginState::Error { message }).await;
                         }
                         ServerResponse::AdoptInstallationId { installation_id } => {
                             println!("Received app token {}", installation_id);
