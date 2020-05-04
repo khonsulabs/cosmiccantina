@@ -114,5 +114,4 @@ pub fn migration() -> Migration {
         DROP FUNCTION IF EXISTS installation_profile
         "#,
         )
-        .debug()
 }
