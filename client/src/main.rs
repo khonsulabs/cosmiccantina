@@ -86,6 +86,7 @@ impl CosmicCantina {
             .await;
         self.render_network_status(scene).await
     }
+
     async fn render_login_screen<'a>(&mut self, scene: &mut SceneTarget<'a>) -> KludgineResult<()> {
         Ok(())
     }
@@ -99,8 +100,8 @@ impl CosmicCantina {
                 format!("Logged in as @{}", profile.username),
                 &Style {
                     font_family: Some("Press Start 2P".to_owned()),
-                    font_size: Some(16.0),
-                    color: Some(Color::new(1.0, 1.0, 1.0, 1.0)),
+                    font_size: Some(8.0),
+                    color: Some(Color::new(0.5, 1.0, 0.5, 1.0)),
                     ..Default::default()
                 }
                 .effective_style(scene),

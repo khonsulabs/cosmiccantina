@@ -5,3 +5,4 @@ All assets, unless otherwise noted, are licensed under [Creative Commons Attribu
 ## Credits
 
 - [`./whitevaultsudios`](./whitevaultstudios): Created by [@whitevaultstudios](https://whitevaultstudios.itch.io/)
+- [`./fonts`](./fonts): [OFL](./fonts/OFL.txt) licensed fonts sourced from the internet

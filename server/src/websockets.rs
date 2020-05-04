@@ -148,7 +148,7 @@ impl ConnectedClient {
                 let installation = sqlx::query_as!(
                     Installation,
                     "SELECT * FROM installation_lookup($1)",
-                    installation_id
+                    self.installation_id
                 )
                 .fetch_one(&pool)
                 .await?;
