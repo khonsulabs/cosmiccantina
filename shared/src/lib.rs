@@ -9,6 +9,7 @@ pub enum ServerRequest {
         version: String,
         installation_id: Option<Uuid>,
     },
+    AuthenticationUrl,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

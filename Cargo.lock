@@ -410,6 +410,7 @@ name = "client"
 version = "0.1.0"
 dependencies = [
  "bincode",
+ "crossbeam",
  "futures",
  "kludgine",
  "serde",

@@ -172,10 +172,14 @@ impl ConnectedClient {
                     responder
                         .send(ServerResponse::Authenticated { profile })
                         .unwrap_or_default();
-                } else {
+                }
+                Ok(())
+            }
+            ServerRequest::AuthenticationUrl => {
+                if let Some(installation_id) = self.installation_id {
                     responder
                         .send(ServerResponse::AuthenticateAtUrl {
-                            url: itchio_authorization_url(self.installation_id.unwrap()),
+                            url: itchio_authorization_url(installation_id),
                         })
                         .unwrap_or_default();
                 }

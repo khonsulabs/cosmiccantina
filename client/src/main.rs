@@ -1,5 +1,6 @@
 mod network;
 use network::{LoginState, Network};
+use shared::ServerRequest;
 
 fn main() {
     SingleWindowApplication::run_with(|| CosmicCantina::new());
@@ -19,6 +20,7 @@ struct CosmicCantina {
 
 struct Assets {
     logo: SourceSprite,
+    backdrop_1: SourceSprite,
     press_start_2p: Font,
 }
 
@@ -27,6 +29,10 @@ impl Assets {
         Self {
             logo: SourceSprite::entire_texture(
                 include_texture!("../../assets/whitevaultstudios/title_with_subtitle.png").unwrap(),
+            )
+            .await,
+            backdrop_1: SourceSprite::entire_texture(
+                include_texture!("../../assets/whitevaultstudios/BackDrop_01.png").unwrap(),
             )
             .await,
             press_start_2p: include_font!(
@@ -62,17 +68,24 @@ impl Window for CosmicCantina {
     async fn render<'a>(&mut self, scene: &mut SceneTarget<'a>) -> KludgineResult<()> {
         match &self.state {
             GameState::MainMenu => self.render_main_menu(scene).await,
-            GameState::Outside => self.render_login_screen(scene).await,
+            GameState::Outside => self.render_outside(scene).await,
         }
     }
 
     async fn process_input(&mut self, event: InputEvent) -> KludgineResult<()> {
+        match event.event {
+            Event::MouseButton { .. } => {
+                Network::request(ServerRequest::AuthenticationUrl).await;
+            }
+            _ => {}
+        }
         Ok(())
     }
 }
 
 impl CosmicCantina {
     async fn render_main_menu<'a>(&mut self, scene: &mut SceneTarget<'a>) -> KludgineResult<()> {
+        self.render_inside_scene(scene).await?;
         let logo_size = self.assets.logo.size().await;
         self.assets
             .logo
@@ -87,7 +100,7 @@ impl CosmicCantina {
         self.render_network_status(scene).await
     }
 
-    async fn render_login_screen<'a>(&mut self, scene: &mut SceneTarget<'a>) -> KludgineResult<()> {
+    async fn render_outside<'a>(&mut self, scene: &mut SceneTarget<'a>) -> KludgineResult<()> {
         Ok(())
     }
 
@@ -139,5 +152,13 @@ impl CosmicCantina {
         };
         text.render_at(scene, Point::new(5.0, 5.0), TextWrap::NoWrap)
             .await
+    }
+
+    async fn render_inside_scene<'a>(&mut self, scene: &mut SceneTarget<'a>) -> KludgineResult<()> {
+        self.assets
+            .backdrop_1
+            .render_at(scene, Point::new(0.0, 0.0))
+            .await;
+        Ok(())
     }
 }
