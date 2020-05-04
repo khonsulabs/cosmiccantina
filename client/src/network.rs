@@ -13,6 +13,7 @@ pub enum LoginState {
     LoggedOut,
     Connected { installation_id: Uuid },
     Authenticated { profile: UserProfile },
+    Error,
 }
 
 pub struct Network {
@@ -48,6 +49,7 @@ async fn network_loop() {
             Err(err) => {
                 println!("Error connecting to socket. {}", err);
                 tokio::time::delay_for(Duration::from_millis(100)).await;
+                Network::set_login_state(LoginState::Error).await;
                 continue;
             }
         };
@@ -55,6 +57,7 @@ async fn network_loop() {
         tx.send(Msg::Binary(
             bincode::serialize(&ServerRequest::Authenticate {
                 installation_id: None,
+                version: shared::PROTOCOL_VERSION.to_owned(),
             })
             .unwrap(),
         ))

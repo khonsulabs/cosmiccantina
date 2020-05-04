@@ -1469,7 +1469,7 @@ dependencies = [
 [[package]]
 name = "kludgine"
 version = "0.1.0"
-source = "git+https://github.com/khonsulabs/kludgine.git#09f35784de3899b28a74ae4af4a4ffd3d0baacdf"
+source = "git+https://github.com/khonsulabs/kludgine.git?branch=gui#390b92fc02a5231bb7003cec9fabfc8bf1991368"
 dependencies = [
  "anyhow",
  "async-std",
@@ -1482,23 +1482,14 @@ dependencies = [
  "generational-arena",
  "image",
  "json",
- "kludgine-macros",
  "lazy_static",
  "platforms",
  "rgx",
  "rusttype 0.9.1",
  "thiserror",
+ "tokio",
  "ttf-parser",
  "winit",
-]
-
-[[package]]
-name = "kludgine-macros"
-version = "0.1.0"
-source = "git+https://github.com/khonsulabs/kludgine.git#09f35784de3899b28a74ae4af4a4ffd3d0baacdf"
-dependencies = [
- "quote 1.0.4",
- "syn 1.0.18",
 ]
 
 [[package]]

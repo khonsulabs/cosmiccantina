@@ -127,7 +127,10 @@ impl ConnectedClient {
         responder: Sender<ServerResponse>,
     ) -> Result<(), anyhow::Error> {
         match request {
-            ServerRequest::Authenticate { installation_id } => {
+            ServerRequest::Authenticate {
+                installation_id,
+                version,
+            } => {
                 self.installation_id = Some(match installation_id {
                     Some(installation_id) => installation_id,
                     None => {

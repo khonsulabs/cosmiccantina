@@ -1,9 +1,14 @@
 use serde_derive::{Deserialize, Serialize};
 use uuid::Uuid;
 
+pub const PROTOCOL_VERSION: &'static str = "0.0.1";
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum ServerRequest {
-    Authenticate { installation_id: Option<Uuid> },
+    Authenticate {
+        version: String,
+        installation_id: Option<Uuid>,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
