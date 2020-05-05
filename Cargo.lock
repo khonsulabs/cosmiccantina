@@ -1486,7 +1486,7 @@ dependencies = [
 [[package]]
 name = "kludgine"
 version = "0.1.0"
-source = "git+https://github.com/khonsulabs/kludgine.git?branch=gui#390b92fc02a5231bb7003cec9fabfc8bf1991368"
+source = "git+https://github.com/khonsulabs/kludgine.git#d0aa8b63d1fe9f6d6ed0ede780578a34fd424d52"
 dependencies = [
  "anyhow",
  "async-std",
