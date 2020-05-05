@@ -8,6 +8,7 @@ fn main() {
 }
 
 use kludgine::prelude::*;
+mod config;
 
 enum GameState {
     MainMenu(MainMenuState),

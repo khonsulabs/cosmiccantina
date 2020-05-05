@@ -113,5 +113,4 @@ pub fn migration() -> Migration {
             r#"
         DROP FUNCTION IF EXISTS installation_profile
         "#,
-        )
 }

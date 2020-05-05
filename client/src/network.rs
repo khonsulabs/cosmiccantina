@@ -1,3 +1,4 @@
+use crate::config::UserConfig;
 use crossbeam::channel::{unbounded, Receiver, Sender, TryRecvError};
 use kludgine::prelude::*;
 use shared::{ServerRequest, ServerResponse, UserProfile};
@@ -5,7 +6,6 @@ use std::time::Duration;
 use tokio::sync::mpsc::{
     error::TryRecvError as TokioTryRecvError, Receiver as TokioReceiver, Sender as TokioSender,
 };
-use uuid::Uuid;
 use yarws::{Client, Msg};
 
 lazy_static! {
@@ -15,7 +15,7 @@ lazy_static! {
 #[derive(Clone, Debug)]
 pub enum LoginState {
     LoggedOut,
-    Connected { installation_id: Uuid },
+    Connected,
     Authenticated { profile: UserProfile },
     Error { message: Option<String> },
 }
@@ -82,7 +82,7 @@ async fn network_loop() {
         let receiver = Network::receiver().await;
         let mut network_limiter = FrequencyLimiter::new(Duration::from_millis(100));
         Network::request(ServerRequest::Authenticate {
-            installation_id: None,
+            installation_id: UserConfig::installation_id().await,
             version: shared::PROTOCOL_VERSION.to_owned(),
         })
         .await;
@@ -111,8 +111,8 @@ async fn receive_loop(rx: &mut TokioReceiver<Msg>) -> bool {
                         }
                         ServerResponse::AdoptInstallationId { installation_id } => {
                             println!("Received app token {}", installation_id);
-                            Network::set_login_state(LoginState::Connected { installation_id })
-                                .await;
+                            UserConfig::set_installation_id(installation_id).await;
+                            Network::set_login_state(LoginState::Connected).await;
                         }
                         ServerResponse::Authenticated { profile } => {
                             println!("Authenticated as {}", profile.username);
