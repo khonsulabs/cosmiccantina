@@ -19,6 +19,11 @@ A game written for [Sim Jam](https://itch.io/jam/dogpit-sim-jam).
 
 ## Setup
 
+- Create a database in PostgreSQL, and set up a .env file containing these settings:
+  - `DATABASE_URL`: The connection string, a la `postgres://cosmiccantina:password@localhost/cosmiccantina`
+  - `OAUTH_CLIENT_ID`: The client ID from itch.io's OAuth application setup
+  - `OAUTH_CLIENT_SECRET`: The client secret from itch.io's OAuth application setup
+- Run the migrations: `cargo run --pakage migrations`
 - Run the server: `cargo run --package server`
 
 # Client Information
