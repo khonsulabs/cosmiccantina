@@ -112,5 +112,5 @@ pub fn migration() -> Migration {
         .with_down(
             r#"
         DROP FUNCTION IF EXISTS installation_profile
-        "#,
+        "#)
 }
