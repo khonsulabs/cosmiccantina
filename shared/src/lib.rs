@@ -31,3 +31,8 @@ pub struct Installation {
     pub id: Uuid,
     pub account_id: Option<i64>,
 }
+
+#[derive(Clone, Copy, Eq, PartialEq, Hash)]
+pub enum NpcModel {
+    GreenGuy = 1,
+}

@@ -1,0 +1,54 @@
+{ "frames": {
+   "Bistro_Full_BackDrop 0.ase": {
+    "frame": { "x": 0, "y": 0, "w": 662, "h": 214 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 662, "h": 214 },
+    "sourceSize": { "w": 662, "h": 214 },
+    "duration": 100
+   },
+   "Bistro_Full_BackDrop 1.ase": {
+    "frame": { "x": 662, "y": 0, "w": 662, "h": 214 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 662, "h": 214 },
+    "sourceSize": { "w": 662, "h": 214 },
+    "duration": 100
+   },
+   "Bistro_Full_BackDrop 2.ase": {
+    "frame": { "x": 1324, "y": 0, "w": 662, "h": 214 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 662, "h": 214 },
+    "sourceSize": { "w": 662, "h": 214 },
+    "duration": 100
+   },
+   "Bistro_Full_BackDrop 3.ase": {
+    "frame": { "x": 1986, "y": 0, "w": 662, "h": 214 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 662, "h": 214 },
+    "sourceSize": { "w": 662, "h": 214 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "http://www.aseprite.org/",
+  "version": "1.2.18-x64",
+  "image": "Bistro_Full_BackDrop.png",
+  "format": "RGBA8888",
+  "size": { "w": 2648, "h": 214 },
+  "scale": "1",
+  "frameTags": [
+  ],
+  "layers": [
+   { "name": "Layer", "opacity": 255, "blendMode": "normal" },
+   { "name": "Layer 2", "opacity": 255, "blendMode": "normal" },
+   { "name": "Layer 4", "opacity": 255, "blendMode": "normal" },
+   { "name": "Layer 3", "opacity": 255, "blendMode": "normal" },
+   { "name": "Layer 1", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}

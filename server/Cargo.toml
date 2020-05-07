@@ -25,3 +25,5 @@ migrations = {path = "../migrations"}
 anyhow="1"
 async-std="1"
 reqwest = {version = "0.10", features=["json"]}
+chrono = "0.4"
+rand = "0.7"

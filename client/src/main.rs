@@ -1,6 +1,7 @@
 mod network;
 use network::{LoginState, Network};
-use shared::ServerRequest;
+use shared::{NpcModel, ServerRequest};
+use std::collections::HashMap;
 
 fn main() {
     dotenv::dotenv().unwrap_or_default();
@@ -28,33 +29,38 @@ struct CosmicCantina {
 
 struct Assets {
     logo: SourceSprite,
-    backdrop_1: SourceSprite,
+    backdrop_1: Sprite,
     press_start_2p: Font,
+    npcs: HashMap<NpcModel, Sprite>,
 }
 
 impl Assets {
-    async fn load() -> Self {
-        Self {
-            logo: SourceSprite::entire_texture(
-                include_texture!("../../assets/whitevaultstudios/title_with_subtitle.png").unwrap(),
-            )
+    async fn load() -> KludgineResult<Self> {
+        Ok(Self {
+            logo: SourceSprite::entire_texture(include_texture!(
+                "../../assets/whitevaultstudios/title_with_subtitle.png"
+            )?)
             .await,
-            backdrop_1: SourceSprite::entire_texture(
-                include_texture!("../../assets/whitevaultstudios/BackDrop_01.png").unwrap(),
+            backdrop_1: include_aseprite_sprite!(
+                "../../assets/whitevaultstudios/Bistro_Full_Backdrop.json",
+                "../../assets/whitevaultstudios/Bistro_Full_Backdrop.png"
             )
-            .await,
+            .await?,
             press_start_2p: include_font!(
                 "../../assets/fonts/PressStart2P/PressStart2P-Regular.ttf"
             ),
-        }
+            npcs: HashMap::new(),
+        })
     }
 }
+
+const BACKDROP_SIZE: Size = Size::new(662f32, 214f32);
 
 impl CosmicCantina {
     async fn new() -> Self {
         Self {
             state: GameState::MainMenu(MainMenuState::default()),
-            assets: Assets::load().await,
+            assets: Assets::load().await.unwrap(),
         }
     }
 }
@@ -78,8 +84,7 @@ impl Window for CosmicCantina {
         match &mut self.state {
             GameState::MainMenu(main_menu) => {
                 if let Some(elapsed) = scene.elapsed() {
-                    let max_x_offset = self.assets.backdrop_1.size().await.width as f32
-                        - scene.size().width / background_scale;
+                    let max_x_offset = BACKDROP_SIZE.width - scene.size().width / background_scale;
                     let pan_direction = if main_menu.pan_left { -1.0 } else { 1.0 };
                     let delta_to_center = (max_x_offset / 2.0 - main_menu.x_offset).abs();
                     let percent_from_center = delta_to_center / (max_x_offset / 2.0);
@@ -195,17 +200,16 @@ impl CosmicCantina {
         x_offset: f32,
         scene: &mut SceneTarget<'a>,
     ) -> KludgineResult<()> {
-        let backdrop_size = self.assets.backdrop_1.size().await;
         let backdrop_scale = self.background_scale(scene).await;
         let mut zoomed = scene.set_camera(backdrop_scale, Point::new(0.0, 0.0));
         let zoomed_size = zoomed.size();
-        self.assets
-            .backdrop_1
+        let frame = self.assets.backdrop_1.get_frame(zoomed.elapsed()).await?;
+        frame
             .render_at(
                 &mut zoomed,
                 Point::new(
                     zoomed_size.width as f32 / -2.0 - x_offset,
-                    backdrop_size.height as f32 / -2.0,
+                    BACKDROP_SIZE.height / -2.0,
                 ),
             )
             .await;
@@ -213,7 +217,6 @@ impl CosmicCantina {
     }
 
     async fn background_scale<'a>(&self, scene: &mut SceneTarget<'a>) -> f32 {
-        let backdrop_size = self.assets.backdrop_1.size().await;
-        scene.size().height / backdrop_size.height as f32
+        scene.size().height / BACKDROP_SIZE.height
     }
 }

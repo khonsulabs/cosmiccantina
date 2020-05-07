@@ -8,6 +8,7 @@ use warp::http::{header, StatusCode};
 use warp::Filter;
 
 mod pubsub;
+mod sim;
 mod websockets;
 
 lazy_static! {
@@ -28,6 +29,7 @@ async fn main() {
         .expect("Error running migrations");
 
     tokio::spawn(pubsub::pg_notify_loop());
+    tokio::spawn(sim::run());
 
     let websockets = warp::path!("ws")
         .and(warp::path::end())
