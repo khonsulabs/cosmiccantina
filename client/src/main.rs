@@ -1,6 +1,8 @@
+mod assets;
 mod network;
+use assets::Assets;
 use network::{LoginState, Network};
-use shared::{NpcModel, ServerRequest};
+use shared::{current_timestamp, Inputs, NpcModel, ServerRequest, UserProfile, WALK_SPEED};
 use std::collections::HashMap;
 
 fn main() {
@@ -13,7 +15,7 @@ mod config;
 
 enum GameState {
     MainMenu(MainMenuState),
-    Outside,
+    Diner(DinerState),
 }
 
 #[derive(Default)]
@@ -22,45 +24,33 @@ struct MainMenuState {
     pan_left: bool,
 }
 
+#[derive(Default)]
+struct DinerState {
+    x_offset: f32,
+    players: HashMap<i64, Player>,
+    last_update: Option<f64>,
+}
+
+struct Player {
+    profile: UserProfile,
+    sprite: Sprite,
+}
+
 struct CosmicCantina {
     state: GameState,
     assets: Assets,
-}
-
-struct Assets {
-    logo: SourceSprite,
-    backdrop_1: Sprite,
-    press_start_2p: Font,
-    npcs: HashMap<NpcModel, Sprite>,
-}
-
-impl Assets {
-    async fn load() -> KludgineResult<Self> {
-        Ok(Self {
-            logo: SourceSprite::entire_texture(include_texture!(
-                "../../assets/whitevaultstudios/title_with_subtitle.png"
-            )?)
-            .await,
-            backdrop_1: include_aseprite_sprite!(
-                "../../assets/whitevaultstudios/Bistro_Full_Backdrop.json",
-                "../../assets/whitevaultstudios/Bistro_Full_Backdrop.png"
-            )
-            .await?,
-            press_start_2p: include_font!(
-                "../../assets/fonts/PressStart2P/PressStart2P-Regular.ttf"
-            ),
-            npcs: HashMap::new(),
-        })
-    }
+    you: Sprite,
 }
 
 const BACKDROP_SIZE: Size = Size::new(662f32, 214f32);
 
 impl CosmicCantina {
     async fn new() -> Self {
+        let assets = Assets::load().await.unwrap();
         Self {
-            state: GameState::MainMenu(MainMenuState::default()),
-            assets: Assets::load().await.unwrap(),
+            state: GameState::Diner(DinerState::default()),
+            you: assets.npcs[&NpcModel::GreenGuy].new_instance().await,
+            assets,
         }
     }
 }
@@ -80,35 +70,98 @@ impl Window for CosmicCantina {
     }
 
     async fn update<'a>(&mut self, scene: &mut SceneTarget<'a>) -> KludgineResult<()> {
+        self.you.set_current_tag(Some("idle")).await?;
         let background_scale = self.background_scale(scene).await;
         match &mut self.state {
             GameState::MainMenu(main_menu) => {
-                if let Some(elapsed) = scene.elapsed() {
-                    let max_x_offset = BACKDROP_SIZE.width - scene.size().width / background_scale;
-                    let pan_direction = if main_menu.pan_left { -1.0 } else { 1.0 };
-                    let delta_to_center = (max_x_offset / 2.0 - main_menu.x_offset).abs();
-                    let percent_from_center = delta_to_center / (max_x_offset / 2.0);
-                    let speed = (0.2 + (1.0 - percent_from_center) * 0.8) * 16.0;
-                    main_menu.x_offset =
-                        main_menu.x_offset + speed * pan_direction * elapsed.as_secs_f32();
-                    if main_menu.x_offset <= 0.0 {
-                        main_menu.x_offset = 0.0;
-                        main_menu.pan_left = false;
-                    } else if main_menu.x_offset >= max_x_offset {
-                        main_menu.x_offset = max_x_offset;
-                        main_menu.pan_left = true;
+                // if let Some(elapsed) = scene.elapsed() {
+                //     let max_x_offset = BACKDROP_SIZE.width - scene.size().width / background_scale;
+                //     let pan_direction = if main_menu.pan_left { -1.0 } else { 1.0 };
+                //     let delta_to_center = (max_x_offset / 2.0 - main_menu.x_offset).abs();
+                //     let percent_from_center = delta_to_center / (max_x_offset / 2.0);
+                //     let speed = (0.2 + (1.0 - percent_from_center) * 0.8) * 16.0;
+                //     main_menu.x_offset =
+                //         main_menu.x_offset + speed * pan_direction * elapsed.as_secs_f32();
+                //     if main_menu.x_offset <= 0.0 {
+                //         main_menu.x_offset = 0.0;
+                //         main_menu.pan_left = false;
+                //     } else if main_menu.x_offset >= max_x_offset {
+                //         main_menu.x_offset = max_x_offset;
+                //         main_menu.pan_left = true;
+                //     }
+                // }
+            }
+            GameState::Diner(diner) => {
+                let horizontal_movement = if scene.key_pressed(VirtualKeyCode::Left)
+                    || scene.key_pressed(VirtualKeyCode::A)
+                {
+                    -1.0
+                } else if scene.key_pressed(VirtualKeyCode::Right)
+                    || scene.key_pressed(VirtualKeyCode::D)
+                {
+                    1.0
+                } else {
+                    0.0
+                };
+
+                diner.x_offset += horizontal_movement
+                    * WALK_SPEED
+                    * scene.elapsed().unwrap_or_default().as_secs_f32();
+
+                diner.x_offset = diner.x_offset.max(0.0);
+
+                let now = current_timestamp();
+                if diner.last_update.map(|t| t + 0.1 <= now).unwrap_or(true) {
+                    Network::request(ServerRequest::Update {
+                        new_inputs: Some(Inputs {
+                            horizontal_movement,
+                            interact: false,
+                        }),
+                        x_offset: diner.x_offset,
+                        timestamp: now,
+                    })
+                    .await;
+                    diner.last_update = Some(now);
+                }
+
+                if let Some((world_timestamp, profiles)) = Network::last_world_update().await {
+                    println!("Got world update with {} players", profiles.len());
+                    let elapsed = (now - world_timestamp) as f32;
+                    for profile in profiles {
+                        let player = diner
+                            .players
+                            .entry(profile.id)
+                            .and_modify(|player| {
+                                player.profile = profile.clone();
+                            })
+                            .or_insert(Player {
+                                profile: profile,
+                                sprite: self.assets.npcs[&NpcModel::OrangeGuy].new_instance().await,
+                            });
+
+                        player.sprite.set_current_tag(Some("idle")).await?;
+                        // Update the position based on the time
+                        player.profile.x_offset +=
+                            elapsed * WALK_SPEED * player.profile.horizontal_input;
+                    }
+                } else {
+                    for player in diner.players.values_mut() {
+                        player.profile.x_offset +=
+                            scene.elapsed().unwrap_or_default().as_secs_f32()
+                                * WALK_SPEED
+                                * player.profile.horizontal_input;
                     }
                 }
             }
-            GameState::Outside => {}
         }
+
         Ok(())
     }
 
     async fn render<'a>(&self, scene: &mut SceneTarget<'a>) -> KludgineResult<()> {
         match &self.state {
             GameState::MainMenu(main_menu) => self.render_main_menu(main_menu, scene).await,
-            GameState::Outside => self.render_outside(scene).await,
+            GameState::Diner(diner) => self.render_diner(diner, scene).await,
         }
     }
 
@@ -129,7 +182,8 @@ impl CosmicCantina {
         main_menu: &MainMenuState,
         scene: &mut SceneTarget<'a>,
     ) -> KludgineResult<()> {
-        self.render_inside_scene(main_menu.x_offset, scene).await?;
+        self.render_inside_scene(None, main_menu.x_offset, scene)
+            .await?;
         let logo_size = self.assets.logo.size().await;
         self.assets
             .logo
@@ -144,14 +198,24 @@ impl CosmicCantina {
         self.render_network_status(scene).await
     }
 
-    async fn render_outside<'a>(&self, scene: &mut SceneTarget<'a>) -> KludgineResult<()> {
-        Ok(())
+    async fn render_diner<'a>(
+        &self,
+        diner: &DinerState,
+        scene: &mut SceneTarget<'a>,
+    ) -> KludgineResult<()> {
+        self.render_inside_scene(diner.players.values(), diner.x_offset, scene)
+            .await?;
+        self.render_network_status(scene).await
     }
 
     async fn render_network_status<'a>(&self, scene: &mut SceneTarget<'a>) -> KludgineResult<()> {
         let text = match Network::login_state().await {
             LoginState::Authenticated { profile } => Text::span(
-                format!("Logged in as @{}", profile.username),
+                format!(
+                    "Logged in as @{} - {:.2}ms",
+                    profile.username,
+                    Network::ping().await * 1_000.0
+                ),
                 &Style {
                     font_family: Some("Press Start 2P".to_owned()),
                     font_size: Some(8.0),
@@ -161,7 +225,7 @@ impl CosmicCantina {
                 .effective_style(scene),
             ),
             LoginState::Connected { .. } => Text::span(
-                format!("Connected"),
+                format!("Connected - {:.2}ms", Network::ping().await * 1_000.0),
                 &Style {
                     font_family: Some("Press Start 2P".to_owned()),
                     font_size: Some(8.0),
@@ -195,24 +259,41 @@ impl CosmicCantina {
             .await
     }
 
-    async fn render_inside_scene<'a>(
+    async fn render_inside_scene<'a, 'b, I: IntoIterator<Item = &'b Player>>(
         &self,
+        players: I,
         x_offset: f32,
         scene: &mut SceneTarget<'a>,
     ) -> KludgineResult<()> {
         let backdrop_scale = self.background_scale(scene).await;
-        let mut zoomed = scene.set_camera(backdrop_scale, Point::new(0.0, 0.0));
-        let zoomed_size = zoomed.size();
+        let mut zoomed = scene.set_zoom(backdrop_scale);
+        let screen_left_offset = x_offset - zoomed.size().width / 2.0;
+        let sprite_offset = Point::new(x_offset - screen_left_offset - 63.0 / 2.0, 180.0 - 48.0);
+
         let frame = self.assets.backdrop_1.get_frame(zoomed.elapsed()).await?;
         frame
-            .render_at(
-                &mut zoomed,
-                Point::new(
-                    zoomed_size.width as f32 / -2.0 - x_offset,
-                    BACKDROP_SIZE.height / -2.0,
-                ),
-            )
+            .render_at(&mut zoomed, Point::new(-screen_left_offset, 0.0))
             .await;
+
+        for player in players {
+            let render = match Network::login_state().await {
+                LoginState::Authenticated { profile } => true, //profile.id != player.profile.id,
+                _ => true,
+            };
+
+            if render {
+                let frame = player.sprite.get_frame(zoomed.elapsed()).await?;
+                frame
+                    .render_at(
+                        &mut zoomed,
+                        Point::new(player.profile.x_offset - sprite_offset.x, sprite_offset.y),
+                    )
+                    .await;
+            }
+        }
+
+        let frame = self.you.get_frame(zoomed.elapsed()).await?;
+        frame.render_at(&mut zoomed, sprite_offset).await;
         Ok(())
     }
 

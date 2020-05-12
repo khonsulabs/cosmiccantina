@@ -2,3 +2,4 @@
 .env
 .vscode/launch.json
 .vscode/tasks.json
+*.code-workspace

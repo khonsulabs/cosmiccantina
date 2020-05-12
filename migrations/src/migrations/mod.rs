@@ -1,11 +1,15 @@
 mod migration_0001_accounts;
+mod migration_0002_movement;
 use futures::executor::block_on;
 use lazy_static::lazy_static;
 use sqlx_simple_migrator::{Migration, MigrationError};
 use std::env;
 
 pub fn migrations() -> Vec<Migration> {
-    vec![migration_0001_accounts::migration()]
+    vec![
+        migration_0001_accounts::migration(),
+        migration_0002_movement::migration(),
+    ]
 }
 
 use sqlx::PgPool;
