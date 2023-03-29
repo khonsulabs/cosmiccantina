@@ -63,7 +63,7 @@ jobs:
       - name: Publish to Registry
         id: publish
         if: github.ref == 'refs/heads/master'
-        uses: elgohr/Publish-Docker-Github-Action@2.14
+        uses: elgohr/Publish-Docker-Github-Action@v5
         with:
           name: khonsulabs/cosmiccantina/cosmiccantina-webserver
           username: ${{ secrets.DOCKER_USERNAME }}
